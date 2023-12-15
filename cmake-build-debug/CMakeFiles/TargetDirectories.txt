@@ -1,0 +1,3 @@
+/home/kwon/Desktop/systemSoft/cmake-build-debug/CMakeFiles/systemSoft.dir
+/home/kwon/Desktop/systemSoft/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/kwon/Desktop/systemSoft/cmake-build-debug/CMakeFiles/rebuild_cache.dir

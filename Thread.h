@@ -3,7 +3,7 @@
 
 #include <pthread.h>
 
-#define TIMESLICE   (1)
+#define TIMESLICE   (3)
 
 typedef int                  BOOL;
 typedef pthread_t         thread_t;
