@@ -8,6 +8,8 @@
 Thread*     ReadyQHead = NULL;
 Thread*     ReadyQTail = NULL;
 
+
+
 Thread*     WaitQHead = NULL;
 Thread*     WaitQTail = NULL;
 
@@ -16,8 +18,8 @@ int 	thread_create(thread_t *thread, thread_attr_t *attr, void *(*start_routine)
     Thread*  TCB= (Thread *)malloc(sizeof (Thread));
     TCB->status= THREAD_STATUS_READY;
     TCB->pExitCode=NULL;
-    TCB->readyCond= cond;
-    TCB->readyMutex=mutex;
+    TCB->readyCond ;
+    TCB->readyMutex;
     TCB->bZombie=0;
     TCB->zombieMutex;
     TCB->parentTid;

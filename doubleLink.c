@@ -8,23 +8,20 @@
 
 
 
-doublyLinkedList* newQueue(){
-    doublyLinkedList* instance= (doublyLinkedList*) malloc(sizeof(doublyLinkedList));
-    instance->length=0;
-    instance->header;
-    instance->trailer;
 
-    return instance;
-}
 
 void enqueue(doublyLinkedList* queue,Thread* thread){
+    Thread * trailerPointer= (*(queue->trailer));
+    // waitingQ 인지 readyQ인지 구분 없이 사용할 수 있도록 더블 포인터 사용
     if(queue->length==0){
-        queue->header= thread;
-        queue->trailer= thread;
+        (*(queue->header))=thread;
+        (*(queue->trailer))=thread;
 
+    }else{
+        trailerPointer->pPrev=thread;
+        thread->pNext= trailerPointer;
+        trailerPointer=thread;
     }
-    queue->trailer->pPrev=thread;
-    queue->trailer=thread;
     queue->length++;
     printf("%p\n", queue->trailer);
     printf("%d\n",queue->length);
@@ -32,18 +29,20 @@ void enqueue(doublyLinkedList* queue,Thread* thread){
 }
 
 void dequeue(doublyLinkedList* queue){
-
-    if(queue->length>0){
-        Thread * nodeToDelete= queue->header;
-        queue->header= queue-> header->pNext;
-
-        queue->length--;
-        printf("%p\n", queue->header);
-        printf("%d",queue->length);
+    Thread * headerPointer= (*(queue->header));
+    if(queue->length<=0){
+        perror("trying to dequeue empty queue");
+    }else if(queue->length==1){
+        (*(queue->header))=NULL;
+        (*(queue->trailer))=NULL;
     }
     else{
-
+        headerPointer=headerPointer->pPrev;
+        headerPointer->pNext=NULL;
     }
+    queue->length --;
+    printf("%p\n", queue->header);
+    printf("%d",queue->length);
 
 }
 

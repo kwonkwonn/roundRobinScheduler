@@ -8,13 +8,15 @@
 pthread_mutex_t mutex;
 pthread_cond_t cond;
 
+int number=0;
+
+
 void * foo1(void * arg){
 
     for(int i=0; i<3; i++){
         pthread_mutex_lock(&mutex);
-
-        int a = *(int *)arg;
-    printf("%d \n",a);
+        number++;
+    printf("%d \n",number);
     fflush(stdout);
     pthread_mutex_unlock(&mutex);
     sleep(1);

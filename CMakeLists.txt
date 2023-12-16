@@ -14,4 +14,6 @@ add_executable(systemSoft
         Scheduler.h
         Thread.c
         Thread.h
-        Init.c)
+        Init.c
+        threadCon.c
+        threadCon.h)

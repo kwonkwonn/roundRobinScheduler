@@ -12,8 +12,8 @@
 
 typedef struct doublyLinked{
     int length;
-    Thread* header;
-    Thread* trailer;
+    Thread ** header;
+    Thread ** trailer;
 }doublyLinkedList;
 
 

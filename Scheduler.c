@@ -5,14 +5,21 @@
 #include <unistd.h>
 #include <stdio.h>
 
+
+
+
 int		RunScheduler( void )
 {
+    Thread* threadCur=NULL;
     while(1){
-        Thread* newthread = readyQueue->header;
-        dequeue(waitingQueue);
-        thread_create(newthread,NULL,);
+        if(readyQueue->length==0) {
+            printf("empty Queue");
+        }else{
+            __ContextSwitch(threadCur, ReadyQHead);
+            threadCur=ReadyQHead;
+            dequeue(readyQueue);
+        }
         sleep(TIMESLICE);
-
     }
 
     return 0;
@@ -21,7 +28,13 @@ int		RunScheduler( void )
 
 void            	__ContextSwitch(Thread* pCurThread, Thread* pNewThread)
 {
+    if(pCurThread==NULL){
 
+    }else{
+        enqueue(readyQueue,pCurThread);
+
+
+    }
 
     
 }
