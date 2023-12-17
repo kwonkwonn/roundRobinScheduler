@@ -3,12 +3,7 @@
 #include "Thread.h"
 
 
-//
-//typedef struct Node{
-//    int* data;
-//    Thread nextN;
-//    Thread preN;
-//}node;
+
 
 typedef struct doublyLinked{
     int length;
@@ -16,11 +11,6 @@ typedef struct doublyLinked{
     Thread ** trailer;
 }doublyLinkedList;
 
-
-void queueInit();
-
-
-doublyLinkedList* newQueue();
 
 
 extern doublyLinkedList* waitingQueue;

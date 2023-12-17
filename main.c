@@ -5,20 +5,16 @@
 #include "Scheduler.h"
 #include <unistd.h>
 
-pthread_mutex_t mutex;
-pthread_cond_t cond;
 
 int number=0;
 
 
 void * foo1(void * arg){
 
-    for(int i=0; i<3; i++){
-        pthread_mutex_lock(&mutex);
+    for(int i=0; i<4; i++){
         number++;
     printf("%d \n",number);
     fflush(stdout);
-    pthread_mutex_unlock(&mutex);
     sleep(1);
 
     }
@@ -42,8 +38,6 @@ void* MyTestCase(void* arg)
 void main(int argc, char* argv[])
 {
 
-    pthread_mutex_init(&mutex, NULL);
-    pthread_cond_init(&cond,NULL);
 
     int TcNum;
     thread_t tid1;
@@ -61,7 +55,8 @@ void main(int argc, char* argv[])
     switch(TcNum)
     {
         case 1:
-            thread_create(&tid1, NULL, (void*)MyTestCase, 0);
+            pthread_create(&tid1, NULL, (void*)MyTestCase, 0);
+            pthread_join(tid1,NULL);
             break;
 /*
         case 2:
@@ -71,10 +66,10 @@ void main(int argc, char* argv[])
             thread_create(&tid3, NULL, (void*)TestCase3, 0);
             break;
 */
-    }
+    }whahn@kw.ac.kr
+
 
     RunScheduler();
-    pthread_attr_destroy(&mutex);
-    pthread_cond_destroy(&cond);
+
     while(1){}
 }
