@@ -7,44 +7,48 @@
 #include "threadCon.h"
 #include <pthread.h>
 #include <signal.h>
-#include <stdbool.h>
-
-
-void __thread_to_run(Thread* pTh)
-{
-    pthread_mutex_lock(&(pTh->readyMutex));
-    pTh->bRunnable=true;
-    pthread_cond_signal(&(pTh->readyCond));
-    pthread_mutex_unlock(&(pTh->readyMutex));
-}
-
 
 
 int		RunScheduler( void )
 {
-    int j=0;
     Thread* threadCur=NULL;
+
+    if(readyQueue->length==0) {
+        printf("empty Queue\n");
+    }else if(ReadyQHead->parentTid==pthread_self()){
+        __thread_to_run(ReadyQHead);
+        dequeue(readyQueue);
+    }
+
     while(1){
-        j++;
-        if(readyQueue->length==0) {
-            printf("empty Queue");
-        }else if(threadCur!=NULL){
+
+        // 만약 레디큐의 쓰레드의 부모 쓰레드가 현재 같다면, 해당 쓰레드는 테스트 케이스를 만들기 위한 쓰레드
+        //이기 때문에 사전에 지워준다. 그렇지 않다면 계속 돌면서 새끼쓰레드를 양산함.
+        sleep(1);
+
+        if(threadCur!=NULL){
+
             __ContextSwitch(threadCur, ReadyQHead);
+
+            pthread_mutex_init(&QconMutex, NULL);
+
             Thread* threadToCycle=threadCur;
             threadCur=ReadyQHead;
             dequeue(readyQueue);
             enqueue(readyQueue, threadToCycle);
+            pthread_mutex_lock(&QconMutex);
 
         }else{
+
             __ContextSwitch(threadCur, ReadyQHead);
+            pthread_mutex_init(&QconMutex, NULL);
+
             threadCur=ReadyQHead;
             dequeue(readyQueue);
-
+            pthread_mutex_lock(&QconMutex);
 
         }
-        printf("cycling...%d번째 사이클 중.... pid %ld \n", j, threadCur->tid);
-        fflush(stdout);
-        sleep(TIMESLICE);
+
     }
     return 0;
 }
@@ -54,12 +58,10 @@ void  __ContextSwitch(Thread* pCurThread, Thread* pNewThread)
 {
     if(pCurThread==NULL){
         __thread_to_run(pNewThread);
-
     }else{
-        pthread_kill(pCurThread->tid,SIGUSR1);
         __thread_to_run(pNewThread);
-    }
+        pthread_kill(pCurThread->tid,SIGUSR1);
 
-    
+    }
 }
 

@@ -16,4 +16,5 @@ add_executable(systemSoft
         Thread.h
         Init.c
         threadCon.c
-        threadCon.h)
+        threadCon.h
+        TestCase1.c)

@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <signal.h>
+#include "threadCon.h"
+
 Thread*     ReadyQHead = NULL;
 Thread*     ReadyQTail = NULL;
 
@@ -16,41 +19,19 @@ pthread_cond_t readyCond;
 
 
 
-Thread * __getThread(thread_t tid){
-    Thread* threadIter= ReadyQHead;
-    for(int i=0; i<readyQueue->length; i++){
-        if(threadIter->tid==tid){
-            printf("%lud", threadIter->tid);
-            return threadIter;
-        }else{
-            threadIter=threadIter->pPrev;
-        }
-    }
 
-}
-
-void __thread_to_ready(int signo){
-    Thread* pTh;
-
-    pTh = __getThread(pthread_self());
-    pthread_mutex_lock(&(pTh->readyMutex));
-    while (pTh->bRunnable == false)
-        pthread_cond_wait(&(pTh->readyCond), &(pTh->readyMutex));
-    pthread_mutex_unlock(&(pTh->readyMutex));
-}
-
-
-
-
-int 	thread_create(thread_t *thread, thread_attr_t *attr, void *(*start_routine) (void *), void *arg)
+int 	thread_create(thread_t *thread, thread_attr_t *attr, void * (*start_routine)(void *), void *arg)
 {
     pthread_mutex_init(&mutex, NULL);
     pthread_cond_init(&readyCond,NULL);
+    Thread* TCB= (Thread *)malloc(sizeof(Thread));
 
-    Thread* TCB= (Thread *)malloc(sizeof (Thread));
+
+    enqueue(readyQueue,TCB);
+
     TCB->status= THREAD_STATUS_READY;
     TCB->pExitCode=NULL;
-    TCB->tid= (pthread_t)thread;
+    TCB->tid;
     TCB->readyCond=readyCond;
     TCB->readyMutex=mutex;
     TCB->bRunnable=false;
@@ -62,26 +43,28 @@ int 	thread_create(thread_t *thread, thread_attr_t *attr, void *(*start_routine)
     TCB->pNext;
 
 
-    pthread_mutex_lock(&mutex);
-//    __getThread(TCB->tid);
+    WrapperArg* wrapper= (WrapperArg*)malloc(sizeof(WrapperArg));
+    wrapper->funcPtr=start_routine;
+    wrapper->funcArg=arg;
+    wrapper->pThread=TCB;
 
-    if (pthread_create(thread, attr, start_routine, arg) > 0)
+
+//    pthread_mutex_lock(&mutex);
+//    __getThread(TCB->tid);
+    signal(SIGUSR1,__thread_to_ready);
+
+    if (pthread_create(thread, attr, &__wrapperFunction, wrapper) > 0)
     {
         perror("thread create error:");
         exit(0);
     }
-    enqueue(readyQueue,TCB);
 
-
-    pthread_mutex_unlock(&mutex);
-
-    pthread_join(*thread, NULL);
+//    pthread_mutex_unlock(&mutex);
 
 
     pthread_attr_destroy(&mutex);
     pthread_cond_destroy(&readyCond);
-
-    return 0;
+    // return 0;
 }
 
 
@@ -110,6 +93,7 @@ int	thread_resume(thread_t tid)
 
 thread_t	thread_self()
 {
+//    thread_t  returnValue=__getThread(pthread_self())->tid;
     return pthread_self();
-}	
+}
 

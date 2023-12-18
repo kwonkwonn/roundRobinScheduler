@@ -3,9 +3,9 @@
 #include "doubleLink.h"
 #include "Thread.h"
 
+
  doublyLinkedList* waitingQueue;
  doublyLinkedList* readyQueue;
-
 
 
 
@@ -22,10 +22,11 @@ void enqueue(doublyLinkedList* queue,Thread* thread){
         (*(queue->trailer))=thread;
     }
     queue->length++;
-
 }
 
 void dequeue(doublyLinkedList* queue){
+    pthread_mutex_lock(&QconMutex);
+
 //    Thread * headerPointer= (*(queue->header));
     if(queue->length<=0){
         perror("trying to dequeue empty queue");
@@ -39,5 +40,6 @@ void dequeue(doublyLinkedList* queue){
     }
     queue->length --;
 
-}
+    pthread_mutex_unlock(&QconMutex);
 
+}

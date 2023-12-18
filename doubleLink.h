@@ -3,6 +3,7 @@
 #include "Thread.h"
 
 
+extern pthread_mutex_t QconMutex;
 
 
 typedef struct doublyLinked{
