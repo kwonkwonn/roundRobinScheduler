@@ -3,7 +3,6 @@
 #include "Thread.h"
 
 
-extern pthread_mutex_t QconMutex;
 
 
 typedef struct doublyLinked{
@@ -20,6 +19,8 @@ extern doublyLinkedList* readyQueue;
 void enqueue(doublyLinkedList* queue,Thread* thread);
 
 void dequeue(doublyLinkedList* queue);
+
+Thread * pullOneNode(doublyLinkedList* queue, thread_t tid);
 
 
 

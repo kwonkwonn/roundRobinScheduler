@@ -69,7 +69,9 @@
 				6,
 				8,
 				9,
-				11
+				11,
+				12,
+				13
 			]
 		}
 	],
@@ -108,7 +110,9 @@
 				6,
 				8,
 				9,
-				11
+				11,
+				12,
+				13
 			]
 		},
 		{
@@ -190,6 +194,18 @@
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
 			"path" : "TestCase1.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "TestCase2.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "TestCase3.c",
 			"sourceGroupIndex" : 0
 		}
 	],

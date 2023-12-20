@@ -1,4 +1,3 @@
-
 #include "Init.h"
 #include "Thread.h"
 #include "Scheduler.h"
@@ -11,48 +10,49 @@
 #include <stdbool.h>
 
 
-
 void __thread_to_ready2(Thread * pTh){
+    pTh->status=THREAD_STATUS_READY;
     pthread_mutex_lock(&(pTh->readyMutex));
     while (pTh->bRunnable == false)
         pthread_cond_wait(&(pTh->readyCond), &(pTh->readyMutex));
     pthread_mutex_unlock(&(pTh->readyMutex));}
 
 
-
-
 void __thread_to_ready(int sigNo){
     Thread* pTh;
-    pTh = __getThread(pthread_self());
-    printf("%ld\n",pthread_self());
+    pTh = __getThread(pthread_self(),readyQueue);
+    printf("thread to stop %ld\n",pthread_self());
+    pTh->status=THREAD_STATUS_READY;
+
     pthread_mutex_lock(&(pTh->readyMutex));
-        pTh->bRunnable = false;
         while (pTh->bRunnable == false)
             pthread_cond_wait(&(pTh->readyCond), &(pTh->readyMutex));
     pthread_mutex_unlock(&(pTh->readyMutex));
 }
 
 
-Thread * __getThread(thread_t tid){
-    Thread* threadIter= ReadyQHead;
-    for(int i=0; i<readyQueue->length; i++){
+Thread * __getThread(thread_t tid,doublyLinkedList * queue){
+    Thread* threadIter= *(queue->header);
+    for(int i=0; i<queue->length; i++){
         if(threadIter->tid==tid){
             return threadIter;
         }else{
             threadIter=threadIter->pPrev;
         }
     }
+    return threadIter;}
 
-    return threadIter;
-}
 
 void __thread_to_run(Thread* pTh)
 {
+    printf("runThread %ld\n", pTh->tid);
     pthread_mutex_lock(&(pTh->readyMutex));
+        pTh->status=THREAD_STATUS_RUN;
         pTh->bRunnable=true;
     pthread_cond_signal(&(pTh->readyCond));
     pthread_mutex_unlock(&(pTh->readyMutex));
 }
+
 
 void * __wrapperFunction(void * arg) {
     void *ret;

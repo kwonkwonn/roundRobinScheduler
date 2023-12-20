@@ -9,7 +9,7 @@ void* Tc2ThreadProc(void* param)
         tid = thread_self();
         for(int i=0;i<10;i++){
                      sleep(2);
-                     printf("Tc1ThreadProc: my thread id (%d), arg is (%d)\n", (int)tid, *((int*)param));
+                     printf("Tc1ThreadProc: my thread id (%ld), arg is (%lld)\n", (long)tid, *((long long*)param));
                      count++;
 
         }             /* sleep for 1 seconds */

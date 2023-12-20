@@ -5,12 +5,8 @@
 #include "Scheduler.h"
 #include <unistd.h>
 #include "TestCase1.h"
-#include "doubleLink.h"
-
-
-int number=0;
-
-
+#include "TestCase2.h"
+#include "TestCase3.h"
 
 //void* MyTestCase(void* arg)
 //{
@@ -25,17 +21,20 @@ int number=0;
 //    // let's implement your testing code
 //    return NULL;
 //}
- pthread_mutex_t QconMutex;
 
+ pthread_mutex_t mainThreadMu;
+pthread_mutex_t mainThreadCon;
 
 
 void main(int argc, char* argv[])
 
 {
-    pthread_mutex_init(&QconMutex,NULL);
+    pthread_mutex_init(&mainThreadMu,NULL);
+    pthread_cond_init(&mainThreadCon,NULL);
+
 
     int TcNum;
-    thread_t tid1;
+    thread_t tid1,tid2, tid3;
     argc=2;
     if(argc != 2)
     {
@@ -44,7 +43,7 @@ void main(int argc, char* argv[])
     }
 
     Init();
-    argv[1]="1";
+    argv[1]="3";
     TcNum = atoi(argv[1]);
 
     switch(TcNum)
@@ -52,20 +51,21 @@ void main(int argc, char* argv[])
         case 1:
             thread_create(&tid1, NULL, (void*)TestCase1, 0);
             break;
-/*
         case 2:
             thread_create(&tid2, NULL, (void*)TestCase2, 0);
             break;
         case 3:
             thread_create(&tid3, NULL, (void*)TestCase3, 0);
             break;
-*/
     }
 
 
     RunScheduler();
 
-    pthread_mutex_destroy(&QconMutex);
+    pthread_mutex_destroy(&mainThreadMu);
+    pthread_cond_init(&mainThreadCon,NULL);
+
+
 
     while(1){}
 }

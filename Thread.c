@@ -22,14 +22,11 @@ pthread_cond_t readyCond;
 
 int 	thread_create(thread_t *thread, thread_attr_t *attr, void * (*start_routine)(void *), void *arg)
 {
+    Thread* TCB= (Thread *)malloc(sizeof(Thread));
     pthread_mutex_init(&mutex, NULL);
     pthread_cond_init(&readyCond,NULL);
-    Thread* TCB= (Thread *)malloc(sizeof(Thread));
 
-
-    enqueue(readyQueue,TCB);
-
-    TCB->status= THREAD_STATUS_READY;
+    TCB->status;
     TCB->pExitCode=NULL;
     TCB->tid;
     TCB->readyCond=readyCond;
@@ -42,15 +39,11 @@ int 	thread_create(thread_t *thread, thread_attr_t *attr, void * (*start_routine
     TCB->pPrev;
     TCB->pNext;
 
-
     WrapperArg* wrapper= (WrapperArg*)malloc(sizeof(WrapperArg));
     wrapper->funcPtr=start_routine;
     wrapper->funcArg=arg;
     wrapper->pThread=TCB;
 
-
-//    pthread_mutex_lock(&mutex);
-//    __getThread(TCB->tid);
     signal(SIGUSR1,__thread_to_ready);
 
     if (pthread_create(thread, attr, &__wrapperFunction, wrapper) > 0)
@@ -58,9 +51,7 @@ int 	thread_create(thread_t *thread, thread_attr_t *attr, void * (*start_routine
         perror("thread create error:");
         exit(0);
     }
-
-//    pthread_mutex_unlock(&mutex);
-
+    enqueue(readyQueue,TCB);
 
     pthread_attr_destroy(&mutex);
     pthread_cond_destroy(&readyCond);
@@ -70,13 +61,22 @@ int 	thread_create(thread_t *thread, thread_attr_t *attr, void * (*start_routine
 
 int 	thread_join(thread_t thread, void **retval)
 {
-    return 0;
+    Thread* threadNow = __getThread(thread, readyQueue);
 
+    pthread_mutex_lock(&mainThreadMu);
+    while(threadNow->status!= THREAD_STATUS_ZOMBIE)
+        pthread_cond_wait(&mainThreadCon,&mainThreadMu);
+    pthread_mutex_unlock(&mainThreadMu);
+    return (int)*retval;
 }
 
 
 int 	thread_suspend(thread_t tid)
 {
+    Thread * threadSuspended= pullOneNode(readyQueue,tid);
+    threadSuspended->status= THREAD_STATUS_BLOCKED;
+    threadSuspended->bRunnable=false;
+    enqueue(waitingQueue, threadSuspended);
     return 0;
 
 }
@@ -84,6 +84,10 @@ int 	thread_suspend(thread_t tid)
 
 int	thread_resume(thread_t tid)
 {
+    Thread * threadToResume= pullOneNode(waitingQueue,tid);
+    threadToResume->status=THREAD_STATUS_READY;
+    threadToResume->bRunnable=true;
+    enqueue(readyQueue, threadToResume);
     return 0;
 
 }
@@ -94,6 +98,16 @@ int	thread_resume(thread_t tid)
 thread_t	thread_self()
 {
 //    thread_t  returnValue=__getThread(pthread_self())->tid;
-    return pthread_self();
+return pthread_self();
 }
 
+
+int thread_exit(void* retval){
+    Thread * threadToDie;
+    threadToDie= __getThread(pthread_self(), readyQueue);
+    threadToDie->bRunnable=false;
+    threadToDie->status=THREAD_STATUS_ZOMBIE;
+    pthread_cond_signal(&mainThreadCon);
+
+    return 0;
+}

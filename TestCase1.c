@@ -14,12 +14,12 @@ void* Tc1ThreadProc(void* param)
            while (count > 0)
            {
                      /* sleep for 1 seconds */
-                     sleep(1);
+                     sleep(2);
                      printf("%d Tc1ThreadProc: my thread id (%ld), arg is (%d)\n",count, (long)tid,*((int*)param));
                      count--;
            }
            retVal = (int*)param;
-//           thread_exit(retVal);
+           thread_exit(retVal);
            return NULL;
 }
 
@@ -27,8 +27,7 @@ void* Tc1ThreadProc(void* param)
  * - TestCase1 tests a round-robin scheduling of thread
  * - Testing API scopes: thread_create
  */
-void
-TestCase1(void)
+void TestCase1(void)
 {
     thread_t tid[TOTAL_THREAD_NUM];
     int i1 = 1, i2 = 2, i3 = 3, i4 = 4, i5 = 5;
