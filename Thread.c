@@ -26,7 +26,7 @@ int 	thread_create(thread_t *thread, thread_attr_t *attr, void * (*start_routine
     pthread_mutex_init(&mutex, NULL);
     pthread_cond_init(&readyCond,NULL);
 
-    TCB->status;
+    TCB->status=THREAD_STATUS_READY;
     TCB->pExitCode=NULL;
     TCB->tid;
     TCB->readyCond=readyCond;
@@ -71,14 +71,22 @@ int 	thread_join(thread_t thread, void **retval)
 }
 
 
-int 	thread_suspend(thread_t tid)
+int thread_suspend(thread_t tid)
 {
-    Thread * threadSuspended= pullOneNode(readyQueue,tid);
+
+    Thread * threadSuspended= __getThread(tid, readyQueue);
+    pthread_mutex_lock(&mainThreadMu);
+
+    pullOneNode(readyQueue,threadSuspended);
     threadSuspended->status= THREAD_STATUS_BLOCKED;
     threadSuspended->bRunnable=false;
     enqueue(waitingQueue, threadSuspended);
-    return 0;
 
+
+    pthread_mutex_unlock(&mainThreadMu);
+
+
+    return 0;
 }
 
 
@@ -88,12 +96,9 @@ int	thread_resume(thread_t tid)
     threadToResume->status=THREAD_STATUS_READY;
     threadToResume->bRunnable=true;
     enqueue(readyQueue, threadToResume);
+
     return 0;
-
 }
-
-
-
 
 thread_t	thread_self()
 {
@@ -105,9 +110,9 @@ return pthread_self();
 int thread_exit(void* retval){
     Thread * threadToDie;
     threadToDie= __getThread(pthread_self(), readyQueue);
+
     threadToDie->bRunnable=false;
     threadToDie->status=THREAD_STATUS_ZOMBIE;
     pthread_cond_signal(&mainThreadCon);
-
     return 0;
 }

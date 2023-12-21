@@ -14,11 +14,12 @@ int		RunScheduler( void )
     Thread* threadCur=NULL;
 
     while(1){
-        sleep(1);
+        sleep(TIMESLICE);
         if(readyQueue->length==0) {
             printf("empty Queue\n");
             continue;
-        }else if(ReadyQHead->parentTid==pthread_self()){
+        }
+        else if(ReadyQHead->parentTid==pthread_self()){
             Thread * head=  ReadyQHead;
             dequeue(readyQueue);
             __thread_to_run(head);
@@ -29,17 +30,30 @@ int		RunScheduler( void )
             continue;
         }
         if(threadCur!=NULL){
+            pthread_mutex_lock(&mainThreadMu);
+
             __ContextSwitch(threadCur, ReadyQHead);
             Thread* threadToCycle=threadCur;
+
             threadCur=ReadyQHead;
             dequeue(readyQueue);
             enqueue(readyQueue, threadToCycle);
+            pthread_mutex_unlock(&mainThreadMu);
+
+
         }else{
+            pthread_mutex_lock(&mainThreadMu);
+
             __ContextSwitch(threadCur, ReadyQHead);
             threadCur=ReadyQHead;
+
             dequeue(readyQueue);
+            pthread_mutex_unlock(&mainThreadMu);
+
+
         }
     }
+
     return 0;
 }
 
@@ -51,8 +65,8 @@ void  __ContextSwitch(Thread* pCurThread, Thread* pNewThread)
     }else{
         __thread_to_run(pNewThread);
         pCurThread->bRunnable=false;
+        pCurThread->status=THREAD_STATUS_READY;
         pthread_kill(pCurThread->tid,SIGUSR1);
-
     }
 }
 

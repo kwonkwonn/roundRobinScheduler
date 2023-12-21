@@ -8,8 +8,10 @@
  doublyLinkedList* readyQueue;
 
 void enqueue(doublyLinkedList* queue,Thread* thread){
+//    pthread_mutex_lock(&mainThreadMu);
+
     // waitingQ 인지 readyQ인지 구분 없이 사용할 수 있도록 더블 포인터 사용
-    pthread_mutex_lock(&mainThreadMu);
+//    pthread_mutex_lock(&mainThreadMu);
     if(queue->length==0){
         (*(queue->header))=thread;
         (*(queue->trailer))=thread;
@@ -20,12 +22,12 @@ void enqueue(doublyLinkedList* queue,Thread* thread){
         (*(queue->trailer))=thread;
     }
     queue->length++;
-    pthread_mutex_unlock(&mainThreadMu);
+//    pthread_mutex_unlock(&mainThreadMu);
 
 }
 
 void dequeue(doublyLinkedList* queue){
-    pthread_mutex_lock(&mainThreadMu);
+//    pthread_mutex_lock(&mainThreadMu);
 
 //    Thread * headerPointer= (*(queue->header));
     if(queue->length<=0){
@@ -39,30 +41,32 @@ void dequeue(doublyLinkedList* queue){
         (*(queue->header))->pNext=NULL;
     }
     queue->length --;
-    pthread_mutex_unlock(&mainThreadMu);
+//    pthread_mutex_unlock(&mainThreadMu);
 
 }
 
-Thread * pullOneNode(doublyLinkedList* queue, thread_t tid){
-    Thread * threatToPull= __getThread(tid,queue);
-    pthread_mutex_lock(&mainThreadMu);
-    if(threatToPull->pPrev!= NULL && threatToPull->pNext!= NULL){
+Thread * pullOneNode(doublyLinkedList* queue, Thread* threadToPull){
+//    pthread_mutex_lock(&mainThreadMu);
+
+    if(threadToPull->pPrev != NULL && threadToPull->pNext != NULL){
      // 큐 한 가운데 있는 노드를 제거할 때
-        threatToPull->pPrev->pNext= threatToPull->pNext;
-        threatToPull->pNext->pPrev= threatToPull->pPrev;
-        threatToPull->pPrev=NULL;
-        threatToPull->pNext=NULL;
+        threadToPull->pPrev->pNext= threadToPull->pNext;
+        threadToPull->pNext->pPrev= threadToPull->pPrev;
+        threadToPull->pPrev=NULL;
+        threadToPull->pNext=NULL;
         queue->length--;
-    }else if(threatToPull->pNext=NULL ){
+    }else if(threadToPull->pNext == NULL ){
         // header에 있거나 길이가 1인 큐를 제거할 때
         dequeue(queue);
-    }else if(threatToPull->pPrev=NULL){
+
+    }else if(threadToPull->pPrev == NULL){
         //trailer에 있는 노드를 제거할 때
-        threatToPull->pNext->pPrev=NULL;
-        threatToPull->pNext=NULL;
+        threadToPull->pNext->pPrev=NULL;
+        threadToPull->pNext=NULL;
         queue->length --;
     }
-    return threatToPull;
+//    pthread_mutex_unlock(&mainThreadMu);
 
-    pthread_mutex_unlock(&mainThreadMu);
+    return threadToPull;
+
 }

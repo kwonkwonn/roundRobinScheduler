@@ -19,8 +19,8 @@ extern doublyLinkedList* readyQueue;
 void enqueue(doublyLinkedList* queue,Thread* thread);
 
 void dequeue(doublyLinkedList* queue);
+Thread * pullOneNode(doublyLinkedList* queue, Thread* threadToPull);
 
-Thread * pullOneNode(doublyLinkedList* queue, thread_t tid);
 
 
 

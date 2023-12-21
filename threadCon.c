@@ -12,8 +12,9 @@
 
 void __thread_to_ready2(Thread * pTh){
     pTh->status=THREAD_STATUS_READY;
+
     pthread_mutex_lock(&(pTh->readyMutex));
-    while (pTh->bRunnable == false)
+    while (pTh->bRunnable == false || pTh->status==THREAD_STATUS_BLOCKED)
         pthread_cond_wait(&(pTh->readyCond), &(pTh->readyMutex));
     pthread_mutex_unlock(&(pTh->readyMutex));}
 
@@ -22,10 +23,9 @@ void __thread_to_ready(int sigNo){
     Thread* pTh;
     pTh = __getThread(pthread_self(),readyQueue);
     printf("thread to stop %ld\n",pthread_self());
-    pTh->status=THREAD_STATUS_READY;
 
     pthread_mutex_lock(&(pTh->readyMutex));
-        while (pTh->bRunnable == false)
+        while (pTh->bRunnable == false || pTh->status==THREAD_STATUS_BLOCKED)
             pthread_cond_wait(&(pTh->readyCond), &(pTh->readyMutex));
     pthread_mutex_unlock(&(pTh->readyMutex));
 }
@@ -40,7 +40,9 @@ Thread * __getThread(thread_t tid,doublyLinkedList * queue){
             threadIter=threadIter->pPrev;
         }
     }
-    return threadIter;}
+
+    return threadIter;
+}
 
 
 void __thread_to_run(Thread* pTh)

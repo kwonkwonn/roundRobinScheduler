@@ -63,7 +63,7 @@ void main(int argc, char* argv[])
     RunScheduler();
 
     pthread_mutex_destroy(&mainThreadMu);
-    pthread_cond_init(&mainThreadCon,NULL);
+    pthread_cond_destroy(&mainThreadCon);
 
 
 
