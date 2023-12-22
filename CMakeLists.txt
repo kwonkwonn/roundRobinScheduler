@@ -19,4 +19,3 @@ add_executable(systemSoft
         threadCon.h
         TestCase1.c
         TestCase2.c
-        TestCase3.c)

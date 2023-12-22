@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <signal.h>
+#include <unistd.h>
 #include "threadCon.h"
 
 Thread*     ReadyQHead = NULL;
@@ -17,6 +18,9 @@ Thread*     WaitQTail = NULL;
 pthread_mutex_t mutex;
 pthread_cond_t readyCond;
 
+pthread_mutex_t zombieMutex;
+pthread_cond_t zombieCond;
+
 
 
 
@@ -24,7 +28,9 @@ int 	thread_create(thread_t *thread, thread_attr_t *attr, void * (*start_routine
 {
     Thread* TCB= (Thread *)malloc(sizeof(Thread));
     pthread_mutex_init(&mutex, NULL);
+    pthread_mutex_init(&zombieMutex, NULL);
     pthread_cond_init(&readyCond,NULL);
+    pthread_cond_init(&zombieCond,NULL);
 
     TCB->status=THREAD_STATUS_READY;
     TCB->pExitCode=NULL;
@@ -32,9 +38,9 @@ int 	thread_create(thread_t *thread, thread_attr_t *attr, void * (*start_routine
     TCB->readyCond=readyCond;
     TCB->readyMutex=mutex;
     TCB->bRunnable=false;
-    TCB->bZombie=false;
-    TCB->zombieCond;
-    TCB->zombieMutex;
+    TCB->zombieCond= zombieCond;
+    TCB->bZombie=true;
+    TCB->zombieMutex= zombieMutex;
     TCB->parentTid=thread_self();
     TCB->pPrev;
     TCB->pNext;
@@ -51,37 +57,54 @@ int 	thread_create(thread_t *thread, thread_attr_t *attr, void * (*start_routine
         perror("thread create error:");
         exit(0);
     }
+//    pthread_mutex_lock(&mainThreadMu);
+
     enqueue(readyQueue,TCB);
 
-    pthread_attr_destroy(&mutex);
+//    pthread_mutex_unlock(&mainThreadMu);
+
+
+    pthread_mutex_destroy(&mutex);
     pthread_cond_destroy(&readyCond);
+    pthread_mutex_destroy(&zombieMutex);
+    pthread_cond_destroy(&zombieCond);
     // return 0;
 }
 
 
 int 	thread_join(thread_t thread, void **retval)
 {
+    sleep(1);
+    pthread_mutex_lock(&mainThreadMu);
+    Thread* threadParent = __getThread(pthread_self(), readyQueue);
     Thread* threadNow = __getThread(thread, readyQueue);
 
-    pthread_mutex_lock(&mainThreadMu);
-    while(threadNow->status!= THREAD_STATUS_ZOMBIE)
-        pthread_cond_wait(&mainThreadCon,&mainThreadMu);
+    threadParent->status=THREAD_STATUS_BLOCKED;
+    //sleep
+    pullOneNode(readyQueue,threadParent);
+    enqueue(waitingQueue,threadParent);
     pthread_mutex_unlock(&mainThreadMu);
+    __thread_to_join(threadNow, threadParent);
+    enqueue(readyQueue,threadParent);
+
+    pullOneNode(waitingQueue,threadParent);
+    pullOneNode(readyQueue, threadNow);
+    threadParent->status=THREAD_STATUS_READY;
+
     return (int)*retval;
 }
 
 
 int thread_suspend(thread_t tid)
 {
-
-    Thread * threadSuspended= __getThread(tid, readyQueue);
     pthread_mutex_lock(&mainThreadMu);
 
-    pullOneNode(readyQueue,threadSuspended);
-    threadSuspended->status= THREAD_STATUS_BLOCKED;
-    threadSuspended->bRunnable=false;
-    enqueue(waitingQueue, threadSuspended);
+    Thread * threadSuspended= __getThread(tid, readyQueue);
 
+//    pullOneNode(readyQueue,*(readyQueue->header));
+    pullOneNode(readyQueue,threadSuspended);
+    enqueue(waitingQueue, threadSuspended);
+    threadSuspended->status= THREAD_STATUS_BLOCKED;
 
     pthread_mutex_unlock(&mainThreadMu);
 
@@ -92,10 +115,15 @@ int thread_suspend(thread_t tid)
 
 int	thread_resume(thread_t tid)
 {
-    Thread * threadToResume= pullOneNode(waitingQueue,tid);
-    threadToResume->status=THREAD_STATUS_READY;
-    threadToResume->bRunnable=true;
-    enqueue(readyQueue, threadToResume);
+    pthread_mutex_lock(&mainThreadMu);
+
+    Thread * threadToPull= __getThread(tid,waitingQueue);
+    pullOneNode(waitingQueue,threadToPull);
+
+    threadToPull->status=THREAD_STATUS_READY;
+
+    enqueue(readyQueue, threadToPull);
+    pthread_mutex_unlock(&mainThreadMu);
 
     return 0;
 }
@@ -110,9 +138,7 @@ return pthread_self();
 int thread_exit(void* retval){
     Thread * threadToDie;
     threadToDie= __getThread(pthread_self(), readyQueue);
+    __thread_to_zombie(threadToDie);
 
-    threadToDie->bRunnable=false;
-    threadToDie->status=THREAD_STATUS_ZOMBIE;
-    pthread_cond_signal(&mainThreadCon);
-    return 0;
+    return (int)retval;
 }

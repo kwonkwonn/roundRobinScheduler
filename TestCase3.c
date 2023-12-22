@@ -46,13 +46,13 @@ void TestCase3(void)
         Thread *temp = WaitQHead;
 
         for(j=0;j<i;j++)
-            temp=temp->pNext;
+            temp=temp->pPrev;
 
-//        if(temp->status != 2)
-//        {
-//            printf("TestCase3: Thread is not suspended\n");
-//            assert(0);
-//        }
+        if(temp->status != 2)
+        {
+            printf("TestCase3: Thread is not suspended\n");
+            assert(0);
+        }
     }
 
     /* Resume thread sequentially */
