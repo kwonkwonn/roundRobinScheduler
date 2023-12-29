@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "doubleLink.h"
 #include "Thread.h"
-#include <threadCon.h>
+#include "threadCon.h"
 
  doublyLinkedList* waitingQueue;
  doublyLinkedList* readyQueue;
