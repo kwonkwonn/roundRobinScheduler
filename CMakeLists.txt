@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.25)
 project(systemSoft C)
 
 set(CMAKE_C_STANDARD 11)
@@ -18,4 +18,4 @@ add_executable(systemSoft
         threadCon.c
         threadCon.h
         TestCase1.c
-        TestCase2.c
+        TestCase2.c)

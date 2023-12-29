@@ -1,0 +1,3 @@
+/home/kwon/Desktop/round/CMakeFiles/systemSoft.dir
+/home/kwon/Desktop/round/CMakeFiles/edit_cache.dir
+/home/kwon/Desktop/round/CMakeFiles/rebuild_cache.dir

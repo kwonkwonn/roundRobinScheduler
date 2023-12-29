@@ -1,0 +1,1 @@
+/usr/bin/cc CMakeFiles/systemSoft.dir/doubleLink.c.o CMakeFiles/systemSoft.dir/main.c.o CMakeFiles/systemSoft.dir/Scheduler.c.o CMakeFiles/systemSoft.dir/Thread.c.o CMakeFiles/systemSoft.dir/Init.c.o CMakeFiles/systemSoft.dir/threadCon.c.o CMakeFiles/systemSoft.dir/TestCase1.c.o CMakeFiles/systemSoft.dir/TestCase2.c.o -o systemSoft 
